@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <title>HTMX with GO | Form Example</title>
+    <link rel="stylesheet" href="/css/index.css">
     <script>
         document.addEventListener("DOMContentLoaded", (event) => {
             document.body.addEventListener("htmx:beforeSwap", function (evt) {
@@ -58,9 +59,21 @@
 {{ end }}
 
 {{ block "contact" . }}
-<div>
+<div id="contact-{{ .Id }}" class="contact" style="display: flex;">
+    <div hx-delete="/contacts/{{ .Id }}" hx-swap="outerHTML swap:500ms" hx-target="#contact-{{ .Id }}"
+        hx-indicator="#ci-{{ .Id }}" style="cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <path fill="currentColor"
+                d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z" />
+        </svg>
+    </div>
+
     <p> Name: <span>{{ .Name }}</span> </p>
     <p> Email: <span>{{ .Email }}</span> </p>
+
+    <div id="ci-{{ .Id }}" class="htmx-indicator">
+        <img src="/images/bars.svg" alt="loading" style="width: 1rem;">
+    </div>
 </div>
 {{ end }}
 

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -22,9 +25,22 @@ func countExample(e *echo.Echo) {
 	})
 }
 
+var id = 0
+
 type Contact struct {
+	Id    int
 	Name  string
 	Email string
+}
+
+func newContact(name, email string) *Contact {
+	id++
+
+	return &Contact{
+		Id:    id,
+		Name:  name,
+		Email: email,
+	}
 }
 
 type Contacts []*Contact
@@ -38,6 +54,15 @@ func (c Contacts) hasEmail(email string) bool {
 	return false
 }
 
+func (c Contacts) indexOf(id int) int {
+	for i, contact := range c {
+		if contact.Id == id {
+			return i
+		}
+	}
+	return -1
+}
+
 type Data struct {
 	Contacts Contacts
 }
@@ -45,7 +70,7 @@ type Data struct {
 func newData() Data {
 	return Data{
 		Contacts: Contacts{
-			{Name: "Matheus", Email: "matt.alpe.dev@gmail.com"},
+			newContact("Matheus", "matt.alpe.dev@gmail.com"),
 		},
 	}
 }
@@ -94,21 +119,36 @@ func formExample(e *echo.Echo) {
 			return c.Render(422, "form", formData)
 		}
 
-		contact := &Contact{
-			Name:  name,
-			Email: email,
-		}
+		contact := newContact(name, email)
 
 		page.Data.Contacts = append(page.Data.Contacts, contact)
 
 		c.Render(200, "form", newFormData())
 		return c.Render(200, "oob-contact", contact)
 	})
+
+	e.DELETE("/contacts/:id", func(c echo.Context) error {
+		time.Sleep(1 * time.Second)
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.String(400, "invalid id")
+		}
+		index := page.Data.Contacts.indexOf(id)
+		if index == -1 {
+			return c.String(404, "contact not found")
+		}
+
+		page.Data.Contacts = append(page.Data.Contacts[:index], page.Data.Contacts[index+1:]...)
+		return c.NoContent(200)
+	})
 }
 
 func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
+	e.Static("/images", "images")
+	e.Static("/css", "css")
 
 	e.Renderer = templates.New()
 
