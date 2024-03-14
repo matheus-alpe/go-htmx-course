@@ -1,0 +1,71 @@
+{{ block "form-page" . }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <title>HTMX with GO | Form Example</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            document.body.addEventListener("htmx:beforeSwap", function (evt) {
+                if (evt.detail.xhr.status === 422) {
+                    evt.detail.shouldSwap = true;
+                    evt.detail.isError = false;
+                }
+            })
+        })
+    </script>
+</head>
+
+<body>
+    {{ template "form" .Form }}
+
+    <hr />
+
+    {{ template "contacts" .Data }}
+</body>
+
+</html>
+{{ end }}
+
+{{ block "form" . }}
+<form hx-post="/contacts" hx-swap="outerHTML">
+    <div>
+        <label for="name">name:</label>
+        <input type="text" name="name" id="name" {{ if .Values.name }} value="{{ .Values.name }}" {{ end }} />
+    </div>
+
+    <div>
+        <label for="email">email:</label>
+        <input type="email" name="email" id="email" {{ if .Values.email }} value="{{ .Values.email }}" {{ end }} />
+        {{ if .Errors.email }}
+        <div style="color: red;">{{ .Errors.email }}</div>
+        {{ end }}
+    </div>
+
+    <button type="submit">Submit</button>
+</form>
+{{ end }}
+
+{{ block "contacts" . }}
+<div id="contacts" style="display: grid; gap: 10px;">
+    {{ range .Contacts }}
+    {{ template "contact" . }}
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block "contact" . }}
+<div>
+    <p> Name: <span>{{ .Name }}</span> </p>
+    <p> Email: <span>{{ .Email }}</span> </p>
+</div>
+{{ end }}
+
+{{ block "oob-contact" . }}
+<div id="contacts" hx-swap-oob="afterbegin">
+    {{ template "contact" . }}
+</div>
+{{ end }}
