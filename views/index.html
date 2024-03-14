@@ -10,9 +10,16 @@
 </head>
 
 <body>
-    Count {{ .Count }}
-    <button hx-post="/count" hx-target="body">Count</button>
+    <div id="count">
+        {{ template "count" . }}
+    </div>
+
+    <button hx-post="/count" hx-target="#count">Count</button>
 </body>
 
 </html>
+{{ end }}
+
+{{ block "count" . }}
+Count {{ .Count }}
 {{ end }}
